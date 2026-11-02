@@ -1,0 +1,8 @@
+{
+  "name": "emk-metal-constructions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ЕМК — сайт-каталог металлоконструкций с интерактивной 3D-сценой",
+  "scripts": { "start": "node scripts/serve.mjs" },
+  "engines": { "node": ">=18" }
+}

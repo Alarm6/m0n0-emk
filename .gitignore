@@ -1,0 +1,14 @@
+research/
+.openai/
+node_modules/
+*.tar.gz
+.env
+.env.*
+!.env.example
+*.log
+
+_site/
+.env
+.env.*
+.dev.vars
+node_modules/
