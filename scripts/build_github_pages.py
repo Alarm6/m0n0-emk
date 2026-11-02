@@ -6,6 +6,7 @@ output = root/'_site'
 assert not output.exists(), 'Use a fresh checkout'
 shutil.copytree(root/config['directory'], output, ignore=shutil.ignore_patterns('.openai', '.git', 'CNAME', '.env*', '*.php'))
 base = '/'+config['repository']+'/'
+revision = os.environ.get('GITHUB_SHA','local')[:12]
 for p in output.rglob('*'):
     if not p.is_file() or p.suffix not in {'.html','.css','.js','.mjs','.webmanifest'}:
         continue
@@ -13,10 +14,12 @@ for p in output.rglob('*'):
     if p.suffix == '.html':
         s = re.sub(r'''((?:src|href|poster|data-src)=['"])/(?!/)([^'"]*)(['"])''', lambda m:m[1]+base+m[2]+m[3], s)
         s = s.replace("location.replace('/yaki-supreme/'", "location.replace('"+base+"yaki-supreme/'")
+        s = re.sub(r'''(<script\b[^>]*\bsrc=['"])([^'"\s]+\.js(?:\?[^'"]*)?)(['"])''', lambda m:m[1]+m[2]+('&' if '?' in m[2] else '?')+'pages='+revision+m[3], s)
     if p.suffix in {'.css','.html'}:
         s = re.sub(r'''url\((['"]?)/(?!/)([^)'"\s]+)(['"]?)\)''', lambda m:'url('+m[1]+base+m[2]+m[3]+')', s)
-    if p.suffix in {'.js','.mjs'}:
-        s = re.sub(r'''(['"`])/(assets|shared|fonts|vendor|models)/''', lambda m:m[1]+base+m[2]+'/', s)
+    # JS asset loaders resolve their own virtual roots. Preserve those strings.
+    if config['repository'] == 'm0n0-plusproduct' and p.name == 'hero-viewer.js':
+        s = re.sub(r'''(['"])(native/(?:pro17/lotus|shared-lotus)\.js)(?:\?[^'"]*)?\1''', lambda m:m[1]+m[2]+'?pages='+revision+m[1], s)
     if p.name == 'site.webmanifest':
         data = json.loads(s)
         for icon in data.get('icons', []):
